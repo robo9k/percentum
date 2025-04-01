@@ -431,6 +431,25 @@ mod tests {
     }
 
     #[test]
+    fn equality() {
+        let a = Percentage::from_points(75.0);
+        let b = Percentage::from_fraction(0.75);
+
+        assert_eq!(a, b);
+    }
+
+    #[cfg(feature = "decimal")]
+    #[test]
+    fn equality_decimal() {
+        use rust_decimal::{Decimal, prelude::FromPrimitive};
+
+        let a = Percentage::from_points(Decimal::from(75));
+        let b = Percentage::from_fraction(Decimal::from_f64(0.75).unwrap());
+
+        assert_eq!(a, b);
+    }
+
+    #[test]
     fn add_subtract_percentage() {
         let base = 100.0_f32;
         let pct = Percentage::from_points(20.0);
