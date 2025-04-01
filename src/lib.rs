@@ -285,6 +285,112 @@ where
     }
 }
 
+#[cfg(feature = "serde")]
+pub mod serde_points {
+    use super::{Number, Percentage};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Percentage<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: Deserialize<'de> + Number,
+    {
+        let points = T::deserialize(deserializer)?;
+
+        Ok(Percentage::from_points(points))
+    }
+
+    pub fn serialize<S, T>(percentage: &Percentage<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: Serialize + Number,
+    {
+        percentage.to_points().into_inner().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+pub mod serde_points_maybe {
+    use super::{Number, Percentage};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Percentage<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: Deserialize<'de> + Number,
+    {
+        let points = Option::<T>::deserialize(deserializer)?;
+
+        Ok(points.map(|points| Percentage::from_points(points)))
+    }
+
+    pub fn serialize<S, T>(
+        percentage: &Option<Percentage<T>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: Serialize + Number,
+    {
+        percentage
+            .map(|percentage| percentage.to_points().into_inner())
+            .serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+pub mod serde_fraction {
+    use super::{Number, Percentage};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Percentage<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: Deserialize<'de> + Number,
+    {
+        let fraction = T::deserialize(deserializer)?;
+
+        Ok(Percentage::from_fraction(fraction))
+    }
+
+    pub fn serialize<S, T>(percentage: &Percentage<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: Serialize + Number,
+    {
+        percentage.to_fraction().into_inner().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+pub mod serde_fraction_maybe {
+    use super::{Number, Percentage};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Percentage<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: Deserialize<'de> + Number,
+    {
+        let fraction = Option::<T>::deserialize(deserializer)?;
+
+        Ok(fraction.map(|fraction| Percentage::from_fraction(fraction)))
+    }
+
+    pub fn serialize<S, T>(
+        percentage: &Option<Percentage<T>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: Serialize + Number,
+    {
+        percentage
+            .map(|percentage| percentage.to_fraction().into_inner())
+            .serialize(serializer)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -368,5 +474,44 @@ mod tests {
         // Width applies to the number, and the percent sign is tacked on
         assert_eq!(format!("{:>8.3}", pct), "  12.346%".to_string());
         assert_eq!(format!("{:<8.3}", pct), "12.346  %".to_string());
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serde() {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Debug, PartialEq, Deserialize, Serialize)]
+        struct Test {
+            #[serde(with = "serde_points")]
+            points: Percentage<f64>,
+            #[serde(with = "serde_points_maybe")]
+            op_points: Option<Percentage<f64>>,
+            #[serde(with = "serde_fraction")]
+            fraction: Percentage<f64>,
+            #[serde(with = "serde_fraction_maybe")]
+            op_fraction: Option<Percentage<f64>>,
+        }
+
+        let p = Test {
+            points: Percentage::from_points(55.0),
+            op_points: Some(Percentage::from_points(45.0)),
+            fraction: Percentage::from_points(35.0),
+            op_fraction: Some(Percentage::from_points(25.0)),
+        };
+        let ser = serde_json::to_string(&p).unwrap();
+        let de: Test = serde_json::from_str(&ser).unwrap();
+        assert_eq!(p, de);
+
+        let s = r#"{
+            "points": 35.0,
+            "op_points": null,
+            "fraction": 0.35,
+            "op_fraction": null
+        }"#;
+        let de: Test = serde_json::from_str(s).unwrap();
+        assert_eq!(de.points, de.fraction);
+        assert!(de.op_points.is_none());
+        assert!(de.op_fraction.is_none());
     }
 }
