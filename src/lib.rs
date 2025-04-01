@@ -263,6 +263,40 @@ impl Sub<Percentage<f32>> for f32 {
     }
 }
 
+impl Add<Percentage<f64>> for f64 {
+    type Output = f64;
+
+    fn add(self, rhs: Percentage<f64>) -> Self::Output {
+        self + rhs.apply_to(self)
+    }
+}
+
+impl Sub<Percentage<f64>> for f64 {
+    type Output = f64;
+
+    fn sub(self, rhs: Percentage<f64>) -> Self::Output {
+        self - rhs.apply_to(self)
+    }
+}
+
+#[cfg(feature = "decimal")]
+impl Add<Percentage<rust_decimal::Decimal>> for rust_decimal::Decimal {
+    type Output = rust_decimal::Decimal;
+
+    fn add(self, rhs: Percentage<rust_decimal::Decimal>) -> Self::Output {
+        self + rhs.apply_to(self)
+    }
+}
+
+#[cfg(feature = "decimal")]
+impl Sub<Percentage<rust_decimal::Decimal>> for rust_decimal::Decimal {
+    type Output = rust_decimal::Decimal;
+
+    fn sub(self, rhs: Percentage<rust_decimal::Decimal>) -> Self::Output {
+        self - rhs.apply_to(self)
+    }
+}
+
 impl<T> std::fmt::Debug for Percentage<T>
 where
     T: std::fmt::Debug,
@@ -456,6 +490,23 @@ mod tests {
 
         assert_eq!(base + pct, 120.0_f32);
         assert_eq!(base - pct, 80.0_f32);
+
+        let base = 100.0_f64;
+        let pct = Percentage::from_points(20.0);
+
+        assert_eq!(base + pct, 120.0_f64);
+        assert_eq!(base - pct, 80.0_f64);
+
+        #[cfg(feature = "decimal")]
+        {
+            use rust_decimal::Decimal;
+
+            let base = Decimal::ONE_HUNDRED;
+            let pct = Percentage::from_points(Decimal::from(20));
+
+            assert_eq!(base + pct, Decimal::from(120));
+            assert_eq!(base - pct, Decimal::from(80));
+        }
     }
 
     #[test]
