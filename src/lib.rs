@@ -321,8 +321,9 @@ where
 
 #[cfg(feature = "serde")]
 pub mod serde_points {
-    use super::{Number, Percentage};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::{Number, Percentage};
 
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Percentage<T>, D::Error>
     where
@@ -345,8 +346,9 @@ pub mod serde_points {
 
 #[cfg(feature = "serde")]
 pub mod serde_points_maybe {
-    use super::{Number, Percentage};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::{Number, Percentage};
 
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Percentage<T>>, D::Error>
     where
@@ -374,8 +376,9 @@ pub mod serde_points_maybe {
 
 #[cfg(feature = "serde")]
 pub mod serde_fraction {
-    use super::{Number, Percentage};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::{Number, Percentage};
 
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Percentage<T>, D::Error>
     where
@@ -398,8 +401,9 @@ pub mod serde_fraction {
 
 #[cfg(feature = "serde")]
 pub mod serde_fraction_maybe {
-    use super::{Number, Percentage};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::{Number, Percentage};
 
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Percentage<T>>, D::Error>
     where
@@ -475,7 +479,8 @@ mod tests {
     #[cfg(feature = "decimal")]
     #[test]
     fn equality_decimal() {
-        use rust_decimal::{Decimal, prelude::FromPrimitive};
+        use rust_decimal::Decimal;
+        use rust_decimal::prelude::FromPrimitive;
 
         let a = Percentage::from_points(Decimal::from(75));
         let b = Percentage::from_fraction(Decimal::from_f64(0.75).unwrap());
