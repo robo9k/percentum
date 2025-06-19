@@ -51,18 +51,18 @@ where
     }
 
     /// Obtain the fractional representation of the [`Percentage`]
-    pub fn to_fraction(self) -> Fraction<T> {
+    pub fn to_fraction(self) -> T {
         match self {
-            Self::Fraction(fraction) => fraction,
-            Self::Points(points) => Fraction::from(points),
+            Self::Fraction(fraction) => fraction.into_inner(),
+            Self::Points(points) => Fraction::from(points).into_inner(),
         }
     }
 
     /// Obtain the points representation of the [`Percentage`]
-    pub fn to_points(self) -> Points<T> {
+    pub fn to_points(self) -> T {
         match self {
-            Self::Fraction(fraction) => Points::from(fraction),
-            Self::Points(points) => points,
+            Self::Fraction(fraction) => Points::from(fraction).into_inner(),
+            Self::Points(points) => points.into_inner(),
         }
     }
 
@@ -96,7 +96,7 @@ where
 
     /// Compute the quantity that represents the percentage of `other`
     pub fn apply_to(self, other: T) -> T {
-        self.to_fraction().into_inner() * other
+        self.to_fraction() * other
     }
 
     /// Compute the percentage gained or lost between the initial and final
@@ -354,7 +354,7 @@ where
     T: Number + std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.to_points().into_inner().fmt(f)?;
+        self.to_points().fmt(f)?;
         f.write_str("%")
     }
 }
@@ -476,13 +476,13 @@ mod tests {
     #[test]
     fn test_f32() {
         let p = Percentage::from_points(125.0_f32);
-        assert_eq!(p.to_fraction().into_inner(), 1.25_f32);
+        assert_eq!(p.to_fraction(), 1.25_f32);
     }
 
     #[test]
     fn test_f64() {
         let p = Percentage::from_points(125.0_f64);
-        assert_eq!(p.to_fraction().into_inner(), 1.25_f64);
+        assert_eq!(p.to_fraction(), 1.25_f64);
     }
 
     #[test]
@@ -608,7 +608,7 @@ mod tests {
 
         for (final_value, initial_value, gain_points) in cases {
             let gain_loss = Percentage::gain_loss(final_value, initial_value).unwrap();
-            assert_eq!(gain_loss.to_points().into_inner(), gain_points);
+            assert_eq!(gain_loss.to_points(), gain_points);
         }
     }
 
@@ -619,7 +619,7 @@ mod tests {
 
         for (part, whole, points) in cases {
             let part_of_the_whole = Percentage::part_of_the_whole(part, whole).unwrap();
-            assert_eq!(part_of_the_whole.to_points().into_inner(), points);
+            assert_eq!(part_of_the_whole.to_points(), points);
         }
     }
 
