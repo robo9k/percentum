@@ -66,6 +66,34 @@ where
         }
     }
 
+    /// Mutate the inner value as a fraction
+    pub fn to_fraction_mut(&mut self) -> &mut T {
+        match self {
+            Self::Fraction(fraction) => fraction.mut_inner(),
+            Self::Points(points) => {
+                *self = Self::Fraction(Fraction::from(*points));
+                let Self::Fraction(fraction) = self else {
+                    unreachable!("to_fraction_mut");
+                };
+                fraction.mut_inner()
+            }
+        }
+    }
+
+    /// Mutate the inner value as points
+    pub fn to_points_mut(&mut self) -> &mut T {
+        match self {
+            Self::Fraction(fraction) => {
+                *self = Self::Points(Points::from(*fraction));
+                let Self::Points(points) = self else {
+                    unreachable!("to_points_mut");
+                };
+                points.mut_inner()
+            }
+            Self::Points(points) => points.mut_inner(),
+        }
+    }
+
     /// Compute the quantity that represents the percentage of `other`
     pub fn apply_to(self, other: T) -> T {
         self.to_fraction().into_inner() * other
@@ -121,14 +149,26 @@ where
 }
 
 impl<T> Fraction<T> {
+    /// Obtain the inner fraction value
     pub fn into_inner(self) -> T {
         self.0
+    }
+
+    /// Mutate the inner fraction value
+    pub fn mut_inner(&mut self) -> &mut T {
+        &mut self.0
     }
 }
 
 impl<T> Points<T> {
+    /// Obtain the inner points value
     pub fn into_inner(self) -> T {
         self.0
+    }
+
+    /// Mutate the inner points value
+    pub fn mut_inner(&mut self) -> &mut T {
+        &mut self.0
     }
 }
 
@@ -486,6 +526,40 @@ mod tests {
         let b = Percentage::from_fraction(Decimal::from_f64(0.75).unwrap());
 
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn mutate_inner_as_points() {
+        // Calling `.round()` on the inner value as points
+        let cases = [
+            (Percentage::from_points(125.75_f64), 126.0),
+            (Percentage::from_fraction(1.2575), 126.0),
+        ];
+
+        for (pct, expected_points) in cases {
+            let mut pct = pct;
+            let n = pct.to_points_mut();
+            *n = n.round();
+
+            assert_eq!(pct, Percentage::from_points(expected_points));
+        }
+    }
+
+    #[test]
+    fn mutate_inner_as_fraction() {
+        // Calling `.round()` on the inner value as fraction. Expected value in points.
+        let cases = [
+            (Percentage::from_fraction(1.2575), 100.0),
+            (Percentage::from_points(125.75_f64), 100.0),
+        ];
+
+        for (pct, expected_points) in cases {
+            let mut pct = pct;
+            let n = pct.to_fraction_mut();
+            *n = n.round();
+
+            assert_eq!(pct, Percentage::from_points(expected_points));
+        }
     }
 
     #[test]
