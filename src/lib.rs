@@ -489,6 +489,14 @@ mod tests {
     }
 
     #[test]
+    fn apply_to() {
+        let base = 80.0_f32;
+        let pct = Percentage::from_points(25.0);
+
+        assert_eq!(pct.apply_to(base), 20.0_f32);
+    }
+
+    #[test]
     fn add_subtract_percentage() {
         let base = 100.0_f32;
         let pct = Percentage::from_points(20.0);
