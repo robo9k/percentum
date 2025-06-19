@@ -94,6 +94,16 @@ where
         }
     }
 
+    /// In-place update the inner value as a fraction
+    pub fn update_fraction(&mut self, f: impl FnOnce(T) -> T) {
+        *self = Self::from_fraction(f(self.to_fraction()));
+    }
+
+    /// In-place update the inner value as points
+    pub fn update_points(&mut self, f: impl FnOnce(T) -> T) {
+        *self = Self::from_points(f(self.to_points()));
+    }
+
     /// Compute the quantity that represents the percentage of `other`
     pub fn apply_to(self, other: T) -> T {
         self.to_fraction() * other
@@ -560,6 +570,59 @@ mod tests {
 
             assert_eq!(pct, Percentage::from_points(expected_points));
         }
+    }
+
+    #[test]
+    fn update_inner_as_points() {
+        let mut pct = Percentage::from_points(125.75_f64);
+        pct.update_points(f64::ceil);
+        assert_eq!(pct, Percentage::from_points(126.0));
+
+        let mut pct = Percentage::from_points(125.75);
+        pct.update_points(f64::floor);
+        assert_eq!(pct, Percentage::from_points(125.0));
+
+        let mut pct = Percentage::from_fraction(1.2575);
+        pct.update_points(f64::round);
+        assert_eq!(pct, Percentage::from_points(126.0));
+
+        let mut pct = Percentage::from_fraction(1.2575);
+        pct.update_points(f64::floor);
+        assert_eq!(pct, Percentage::from_points(125.0));
+
+        let mut pct = Percentage::from_fraction(1.2575);
+        pct.update_points(|points| points + 2.0);
+        assert_eq!(pct, Percentage::from_points(127.75));
+
+        #[cfg(feature = "decimal")]
+        {
+            use rust_decimal::prelude::FromPrimitive;
+            use rust_decimal::{Decimal, RoundingStrategy};
+
+            let mut pct = Percentage::from_points(Decimal::from_f64(125.76).expect("decimal"));
+            pct.update_points(|points| points.round_dp_with_strategy(1, RoundingStrategy::ToZero));
+
+            assert_eq!(pct.to_points(), Decimal::from_f64(125.7).expect("decimal"));
+        }
+    }
+
+    #[test]
+    fn update_inner_as_fraction() {
+        let mut pct = Percentage::from_points(125.75_f64);
+        pct.update_fraction(f64::ceil);
+        assert_eq!(pct, Percentage::from_points(200.0));
+
+        let mut pct = Percentage::from_points(125.75);
+        pct.update_fraction(f64::floor);
+        assert_eq!(pct, Percentage::from_points(100.0));
+
+        let mut pct = Percentage::from_fraction(1.2575);
+        pct.update_fraction(f64::round);
+        assert_eq!(pct, Percentage::from_points(100.0));
+
+        let mut pct = Percentage::from_fraction(1.2575);
+        pct.update_fraction(f64::floor);
+        assert_eq!(pct, Percentage::from_points(100.0));
     }
 
     #[test]
