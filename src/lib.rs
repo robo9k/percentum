@@ -195,7 +195,7 @@ impl Number for f64 {
 #[cfg(feature = "decimal")]
 impl Number for rust_decimal::Decimal {
     fn is_zero(&self) -> bool {
-        rust_decimal::Decimal::is_zero(&self)
+        rust_decimal::Decimal::is_zero(self)
     }
 
     fn one_hundred() -> Self {
@@ -549,8 +549,8 @@ mod tests {
     fn mutate_inner_as_fraction() {
         // Calling `.round()` on the inner value as fraction. Expected value in points.
         let cases = [
-            (Percentage::from_fraction(1.2575), 100.0),
-            (Percentage::from_points(125.75_f64), 100.0),
+            (Percentage::from_fraction(1.2575_f64), 100.0),
+            (Percentage::from_points(125.75), 100.0),
         ];
 
         for (pct, expected_points) in cases {
