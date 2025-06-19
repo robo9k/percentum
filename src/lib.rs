@@ -390,7 +390,7 @@ pub mod serde_points {
         S: Serializer,
         T: Serialize + Number,
     {
-        percentage.to_points().into_inner().serialize(serializer)
+        percentage.to_points().serialize(serializer)
     }
 }
 
@@ -419,7 +419,7 @@ pub mod serde_points_maybe {
         T: Serialize + Number,
     {
         percentage
-            .map(|percentage| percentage.to_points().into_inner())
+            .map(|percentage| percentage.to_points())
             .serialize(serializer)
     }
 }
@@ -445,7 +445,7 @@ pub mod serde_fraction {
         S: Serializer,
         T: Serialize + Number,
     {
-        percentage.to_fraction().into_inner().serialize(serializer)
+        percentage.to_fraction().serialize(serializer)
     }
 }
 
@@ -474,7 +474,7 @@ pub mod serde_fraction_maybe {
         T: Serialize + Number,
     {
         percentage
-            .map(|percentage| percentage.to_fraction().into_inner())
+            .map(|percentage| percentage.to_fraction())
             .serialize(serializer)
     }
 }
