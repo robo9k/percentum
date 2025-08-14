@@ -10,7 +10,7 @@ repository = "https://github.com/clarkmoody/percentum"
 [features]
 default = []
 decimal = ["dep:rust_decimal"]
-serde = ["dep:serde", "serde_json"]
+serde = ["dep:serde", "serde_json", "rust_decimal?/serde"]
 
 [dependencies]
 rust_decimal = { version = "1.36", optional = true, default-features = false }
